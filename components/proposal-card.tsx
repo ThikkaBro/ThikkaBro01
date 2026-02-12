@@ -46,7 +46,7 @@ export function ProposalCard({ onYes, onNo }: ProposalCardProps) {
             animate={{ scale: [1, 1.08, 1] }}
             transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
           >
-            💍
+            💌
           </motion.div>
 
           <div className="space-y-2">
