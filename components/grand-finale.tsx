@@ -12,23 +12,22 @@ interface GrandFinaleProps {
 export function GrandFinale({ isActive, outcome }: GrandFinaleProps) {
   const [showContent, setShowContent] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const { unlockSound, playFinale } = useUiSounds()
+  const { playFinale } = useUiSounds()
 
   useEffect(() => {
     if (isActive) {
-      unlockSound()
       playFinale()
       const flashTimer = setTimeout(() => {
         setShowContent(true)
         setShowConfetti(outcome === 'yes')
-      }, 380)
+      }, 400)
 
       return () => clearTimeout(flashTimer)
     }
 
     setShowContent(false)
     setShowConfetti(false)
-  }, [isActive, outcome, playFinale, unlockSound])
+  }, [isActive, outcome, playFinale])
 
   const isYes = outcome === 'yes'
 
@@ -82,17 +81,8 @@ export function GrandFinale({ isActive, outcome }: GrandFinaleProps) {
             </h2>
           </motion.div>
 
-          <motion.div
-            className="mt-6 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-medium tracking-wide"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.45 }}
-          >
-            Final answer: {isYes ? 'YES 💍' : 'NO 🤍'}
-          </motion.div>
-
           <motion.p
-            className="mt-8 text-center text-muted-foreground max-w-xl px-6 text-lg"
+            className="mt-10 text-center text-muted-foreground max-w-xl px-6 text-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}

@@ -11,17 +11,15 @@ interface ProposalCardProps {
 
 export function ProposalCard({ onYes, onNo }: ProposalCardProps) {
   const [selectionMessage, setSelectionMessage] = useState('Choose from your heart ✨')
-  const { unlockSound, playHover, playYes, playNo } = useUiSounds()
+  const { playHover, playYes, playNo } = useUiSounds()
 
   const handleYes = () => {
-    unlockSound()
     setSelectionMessage('Perfect choice. Let\'s celebrate 💖')
     playYes()
     onYes()
   }
 
   const handleNo = () => {
-    unlockSound()
     setSelectionMessage('Thank you for being honest. Your answer is respected 🤍')
     playNo()
     onNo()
