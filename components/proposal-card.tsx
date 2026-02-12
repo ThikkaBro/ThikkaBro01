@@ -2,121 +2,90 @@
 
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { useUiSounds } from '@/hooks/use-ui-sounds'
 
 interface ProposalCardProps {
   onYes: () => void
+  onNo: () => void
 }
 
-export function ProposalCard({ onYes }: ProposalCardProps) {
-  const [noButtonPos, setNoButtonPos] = useState({ x: 0, y: 0 })
-  const [noHovered, setNoHovered] = useState(false)
+export function ProposalCard({ onYes, onNo }: ProposalCardProps) {
+  const [selectionMessage, setSelectionMessage] = useState('Choose from your heart ✨')
+  const { unlockSound, playHover, playYes, playNo } = useUiSounds()
 
-  const handleNoHover = () => {
-    if (!noHovered) {
-      setNoHovered(true)
-      const randomX = Math.random() * 200 - 100
-      const randomY = Math.random() * 200 - 100
-      setNoButtonPos({ x: randomX, y: randomY })
-    }
+  const handleYes = () => {
+    unlockSound()
+    setSelectionMessage('Perfect choice. Let\'s celebrate 💖')
+    playYes()
+    onYes()
   }
 
-  const handleNoLeave = () => {
-    setNoHovered(false)
-    setNoButtonPos({ x: 0, y: 0 })
-  }
-
-  const handleNoTouch = () => {
-    const randomX = Math.random() * 200 - 100
-    const randomY = Math.random() * 200 - 100
-    setNoButtonPos({ x: randomX, y: randomY })
+  const handleNo = () => {
+    unlockSound()
+    setSelectionMessage('Thank you for being honest. Your answer is respected 🤍')
+    playNo()
+    onNo()
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.6, delay: 0.2 }}
+      initial={{ opacity: 0, scale: 0.96, y: 12 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.55, ease: 'easeOut' }}
       className="flex items-center justify-center min-h-screen px-4 py-8 bg-background"
+      onPointerDown={unlockSound}
     >
       <motion.div
-        className="relative w-full max-w-md p-8 rounded-2xl backdrop-blur-md bg-white/10 border border-white/20 shadow-2xl"
-        animate={{ y: [0, -10, 0] }}
-        transition={{ duration: 3, repeat: Infinity }}
+        className="relative w-full max-w-xl p-8 sm:p-10 rounded-3xl bg-card/90 border border-border shadow-2xl"
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
       >
-        {/* Decorative background elements */}
-        <div className="absolute inset-0 overflow-hidden rounded-2xl">
-          <motion.div
-            className="absolute top-0 right-0 w-40 h-40 bg-primary opacity-10 rounded-full blur-2xl"
-            animate={{ x: [0, 20, 0], y: [0, -20, 0] }}
-            transition={{ duration: 4, repeat: Infinity }}
-          />
-          <motion.div
-            className="absolute bottom-0 left-0 w-40 h-40 bg-accent opacity-10 rounded-full blur-2xl"
-            animate={{ x: [0, -20, 0], y: [0, 20, 0] }}
-            transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
-          />
-        </div>
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/10 via-transparent to-accent/10 pointer-events-none" />
 
-        {/* Content */}
-        <div className="relative z-10 text-center space-y-6">
-          {/* Icon */}
+        <div className="relative z-10 text-center space-y-7">
           <motion.div
             className="flex justify-center text-6xl"
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            animate={{ scale: [1, 1.08, 1] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
           >
             💍
           </motion.div>
 
-          {/* Question */}
-          <div>
-            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3">
-              Will you be mine?
-            </h2>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Forever and always, my love
-            </p>
+          <div className="space-y-2">
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-foreground">Will you be mine?</h2>
+            <p className="text-muted-foreground text-base sm:text-lg">Forever and always, my love.</p>
           </div>
 
-          {/* Buttons */}
-          <div className="flex gap-4 justify-center items-center relative h-16 mt-8">
-            {/* Yes Button */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
             <motion.button
-              onClick={onYes}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-lg hover:shadow-lg transition-shadow duration-300 relative z-20"
+              onClick={handleYes}
+              onMouseEnter={playHover}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-lg shadow-md hover:shadow-lg transition-all duration-200"
             >
-              Yes, Forever!
+              Yes, forever
             </motion.button>
 
-            {/* No Button - Teleporting */}
             <motion.button
-              animate={{
-                x: noButtonPos.x,
-                y: noButtonPos.y,
-              }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 10,
-              }}
-              onMouseEnter={handleNoHover}
-              onMouseLeave={handleNoLeave}
-              onTouchStart={handleNoTouch}
-              className="absolute px-8 py-3 bg-muted text-muted-foreground rounded-lg font-semibold text-lg hover:shadow-lg transition-shadow duration-300 cursor-pointer z-10"
+              onClick={handleNo}
+              onMouseEnter={playHover}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full px-6 py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold text-lg shadow-sm hover:shadow-md transition-all duration-200"
             >
               No
             </motion.button>
           </div>
 
-          {/* Fun text */}
           <motion.p
-            className="text-sm text-muted-foreground italic"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 3, repeat: Infinity }}
+            key={selectionMessage}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="text-sm text-muted-foreground"
           >
-            (The "No" button is shy)
+            {selectionMessage}
           </motion.p>
         </div>
       </motion.div>
