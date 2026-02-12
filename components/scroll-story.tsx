@@ -11,26 +11,32 @@ const storyFrames = [
   {
     caption: 'From the moment you entered my life, everything changed.',
     color: 'from-rose-500 to-pink-300',
+    note: 'You are my favorite beginning.',
   },
   {
     caption: 'Every day with you feels like a beautiful dream.',
     color: 'from-pink-400 to-red-300',
+    note: 'Every sunrise is sweeter with you.',
   },
   {
     caption: 'Your smile brightens even my darkest days.',
     color: 'from-red-400 to-rose-400',
+    note: 'Your smile is my safe place.',
   },
   {
     caption: 'In your eyes, I found my home.',
     color: 'from-rose-300 to-pink-200',
+    note: 'Home is wherever your hand is in mine.',
   },
   {
     caption: 'With you, I want to face all the tomorrows.',
     color: 'from-pink-300 to-red-200',
+    note: 'Let\'s write forever, one day at a time.',
   },
   {
     caption: 'You are my forever, Thenumi.',
     color: 'from-rose-200 to-pink-100',
+    note: 'My heart chooses you, always.',
   },
 ]
 
@@ -66,6 +72,7 @@ export function ScrollStory({ onScrollComplete }: ScrollStoryProps) {
             index={index}
             caption={frame.caption}
             imageSrc={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cdefs%3E%3ClinearGradient id='grad${index}' x1='0%' y1='0%' x2='100%' y2='100%'%3E%3Cstop offset='0%' style='stop-color:hsl(${350 + index * 5} 85% 75%);stop-opacity:0.3' /%3E%3Cstop offset='100%' style='stop-color:hsl(${28 + index * 3} 65% 55%);stop-opacity:0.3' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='400' fill='url(%23grad${index})'/%3E%3C/svg%3E`}
+            note={frame.note}
           />
         </div>
       ))}
