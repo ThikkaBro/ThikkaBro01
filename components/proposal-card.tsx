@@ -9,75 +9,20 @@ interface ProposalCardProps {
   onNo: () => void
 }
 
-type QuizChoice = {
-  label: string
-  correct?: boolean
-}
-
-type QuizQuestion = {
-  prompt: string
-  choices: QuizChoice[]
-}
-
-const quizQuestions: QuizQuestion[] = [
-  {
-    prompt: 'Mini Love Quiz 1: What feels like home to me?',
-    choices: [
-      { label: 'Anywhere with your smile', correct: true },
-      { label: 'A fancy palace' },
-      { label: 'An empty island' },
-    ],
-  },
-  {
-    prompt: 'Mini Love Quiz 2: What do I choose, every single day?',
-    choices: [
-      { label: 'You, always', correct: true },
-      { label: 'Luck only' },
-      { label: 'Nothing at all' },
-    ],
-  },
-  {
-    prompt: 'Final Question: Will you be my Valentine? 💘',
-    choices: [
-      { label: 'Yes, I will 💖', correct: true },
-      { label: 'Still thinking 🤍' },
-    ],
-  },
-]
-
 export function ProposalCard({ onYes, onNo }: ProposalCardProps) {
-  const [selectionMessage, setSelectionMessage] = useState('Tap anywhere once to activate sound, then enjoy the quiz ✨')
-  const [step, setStep] = useState(0)
-  const [score, setScore] = useState(0)
-  const { unlockSound, playHover, playYes, playNo } = useUiSounds()
+  const [selectionMessage, setSelectionMessage] = useState('Choose from your heart ✨')
+  const { playHover, playYes, playNo } = useUiSounds()
 
-  const current = quizQuestions[step]
-  const isFinalStep = step === quizQuestions.length - 1
+  const handleYes = () => {
+    setSelectionMessage('Perfect choice. Let\'s celebrate 💖')
+    playYes()
+    onYes()
+  }
 
-  const handleChoice = (choice: QuizChoice) => {
-    unlockSound()
-
-    if (choice.correct) {
-      playYes()
-      setScore((prev) => prev + 1)
-      setSelectionMessage('Aww, that made my heart smile 💞')
-    } else {
-      playNo()
-      setSelectionMessage('Still cute… but my heart knows the answer 😌')
-    }
-
-    if (!isFinalStep) {
-      setTimeout(() => {
-        setStep((prev) => prev + 1)
-      }, 350)
-      return
-    }
-
-    if (choice.correct) {
-      setTimeout(onYes, 350)
-    } else {
-      setTimeout(onNo, 350)
-    }
+  const handleNo = () => {
+    setSelectionMessage('Thank you for being honest. Your answer is respected 🤍')
+    playNo()
+    onNo()
   }
 
   return (
@@ -89,7 +34,7 @@ export function ProposalCard({ onYes, onNo }: ProposalCardProps) {
       onPointerDown={unlockSound}
     >
       <motion.div
-        className="relative w-full max-w-2xl p-8 sm:p-10 rounded-3xl bg-card/90 border border-border shadow-2xl"
+        className="relative w-full max-w-xl p-8 sm:p-10 rounded-3xl bg-card/90 border border-border shadow-2xl"
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
       >
@@ -105,37 +50,34 @@ export function ProposalCard({ onYes, onNo }: ProposalCardProps) {
           </motion.div>
 
           <div className="space-y-2">
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-foreground">Will you be my Valentine?</h2>
-            <p className="text-muted-foreground text-base sm:text-lg">First, a small romantic quiz just for us.</p>
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-foreground">Will you be mine?</h2>
+            <p className="text-muted-foreground text-base sm:text-lg">Forever and always, my love.</p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-background/70 p-4 sm:p-5 text-left">
-            <p className="text-xs uppercase tracking-[0.2em] text-primary mb-2">Question {step + 1} / {quizQuestions.length}</p>
-            <p className="font-medium text-foreground text-lg mb-4">{current.prompt}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
+            <motion.button
+              onClick={handleYes}
+              onMouseEnter={playHover}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-lg shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              Yes, forever
+            </motion.button>
 
-            <div className="grid grid-cols-1 gap-3">
-              {current.choices.map((choice) => (
-                <motion.button
-                  key={choice.label}
-                  onClick={() => handleChoice(choice)}
-                  onMouseEnter={playHover}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  className="w-full text-left px-4 py-3 bg-secondary text-secondary-foreground rounded-xl font-medium hover:bg-secondary/80 transition-colors duration-200"
-                >
-                  {choice.label}
-                </motion.button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-sm px-1">
-            <p className="text-muted-foreground">Love quiz score: <span className="font-semibold text-foreground">{score}</span></p>
-            <p className="text-muted-foreground">Sound: active after first tap 🔊</p>
+            <motion.button
+              onClick={handleNo}
+              onMouseEnter={playHover}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full px-6 py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold text-lg shadow-sm hover:shadow-md transition-all duration-200"
+            >
+              No
+            </motion.button>
           </div>
 
           <motion.p
-            key={`${selectionMessage}-${step}`}
+            key={selectionMessage}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}

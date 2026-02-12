@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 type Tone = {
   frequency: number
@@ -10,122 +10,104 @@ type Tone = {
   gain?: number
 }
 
-type SharedAudio = {
-  context: AudioContext
-  master: GainNode
-}
+export function useUiSounds() {
+  const audioContextRef = useRef<AudioContext | null>(null)
 
-let sharedAudio: SharedAudio | null = null
-
-function getSharedAudio(): SharedAudio | null {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  if (!sharedAudio) {
-    const Context = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-    if (!Context) {
+  const getAudioContext = useCallback(() => {
+    if (typeof window === 'undefined') {
       return null
     }
 
-    const context = new Context()
-    const master = context.createGain()
-    master.gain.value = 0.35
-    master.connect(context.destination)
-
-    sharedAudio = { context, master }
-  }
-
-  if (sharedAudio.context.state === 'suspended') {
-    sharedAudio.context.resume().catch(() => {
-      // no-op: can still require additional user gesture
-    })
-  }
-
-  return sharedAudio
-}
-
-export function useUiSounds() {
-  const unlockSound = useCallback(() => {
-    const audio = getSharedAudio()
-    if (!audio) {
-      return
+    if (!audioContextRef.current) {
+      const Context = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+      if (!Context) {
+        return null
+      }
+      audioContextRef.current = new Context()
     }
 
-    const { context, master } = audio
-    const oscillator = context.createOscillator()
-    const gain = context.createGain()
-    const now = context.currentTime
-
-    oscillator.type = 'triangle'
-    oscillator.frequency.setValueAtTime(620, now)
-    gain.gain.setValueAtTime(0.0001, now)
-    gain.gain.exponentialRampToValueAtTime(0.02, now + 0.008)
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05)
-
-    oscillator.connect(gain)
-    gain.connect(master)
-    oscillator.start(now)
-    oscillator.stop(now + 0.05)
-  }, [])
-
-  const playToneSequence = useCallback((tones: Tone[]) => {
-    const audio = getSharedAudio()
-    if (!audio) {
-      return
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume().catch(() => {
+        // no-op: browser may still require an additional user gesture
+      })
     }
 
-    const { context, master } = audio
-    const now = context.currentTime
-
-    tones.forEach((tone) => {
-      const oscillator = context.createOscillator()
-      const gain = context.createGain()
-      const startTime = now + (tone.delay ?? 0)
-      const endTime = startTime + tone.duration
-
-      oscillator.type = tone.type ?? 'sine'
-      oscillator.frequency.setValueAtTime(tone.frequency, startTime)
-
-      gain.gain.setValueAtTime(0.0001, startTime)
-      gain.gain.exponentialRampToValueAtTime(tone.gain ?? 0.2, startTime + 0.02)
-      gain.gain.exponentialRampToValueAtTime(0.0001, endTime)
-
-      oscillator.connect(gain)
-      gain.connect(master)
-
-      oscillator.start(startTime)
-      oscillator.stop(endTime)
-    })
+    return audioContextRef.current
   }, [])
+
+  const playToneSequence = useCallback(
+    (tones: Tone[]) => {
+      const ctx = getAudioContext()
+      if (!ctx) {
+        return
+      }
+
+      const now = ctx.currentTime
+
+      tones.forEach((tone) => {
+        const oscillator = ctx.createOscillator()
+        const gainNode = ctx.createGain()
+        const startTime = now + (tone.delay ?? 0)
+        const endTime = startTime + tone.duration
+        const volume = tone.gain ?? 0.08
+
+        oscillator.type = tone.type ?? 'sine'
+        oscillator.frequency.setValueAtTime(tone.frequency, startTime)
+
+        gainNode.gain.setValueAtTime(0.0001, startTime)
+        gainNode.gain.exponentialRampToValueAtTime(volume, startTime + 0.01)
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, endTime)
+
+        oscillator.connect(gainNode)
+        gainNode.connect(ctx.destination)
+
+        oscillator.start(startTime)
+        oscillator.stop(endTime)
+      })
+    },
+    [getAudioContext],
+  )
 
   const playHover = useCallback(() => {
-    playToneSequence([{ frequency: 720, duration: 0.12, type: 'triangle', gain: 0.16 }])
+    playToneSequence([{ frequency: 620, duration: 0.09, type: 'triangle', gain: 0.05 }])
   }, [playToneSequence])
 
   const playYes = useCallback(() => {
     playToneSequence([
-      { frequency: 523.25, duration: 0.14, type: 'triangle', gain: 0.2 },
-      { frequency: 659.25, duration: 0.16, delay: 0.1, type: 'triangle', gain: 0.2 },
-      { frequency: 783.99, duration: 0.24, delay: 0.2, type: 'sine', gain: 0.24 },
+      { frequency: 523.25, duration: 0.1, type: 'triangle', gain: 0.08 },
+      { frequency: 659.25, duration: 0.14, delay: 0.08, type: 'triangle', gain: 0.08 },
+      { frequency: 783.99, duration: 0.18, delay: 0.16, type: 'sine', gain: 0.09 },
     ])
   }, [playToneSequence])
 
   const playNo = useCallback(() => {
     playToneSequence([
-      { frequency: 349.23, duration: 0.14, type: 'square', gain: 0.18 },
-      { frequency: 261.63, duration: 0.2, delay: 0.1, type: 'sawtooth', gain: 0.18 },
+      { frequency: 320, duration: 0.12, type: 'sawtooth', gain: 0.04 },
+      { frequency: 260, duration: 0.16, delay: 0.08, type: 'sawtooth', gain: 0.04 },
     ])
   }, [playToneSequence])
 
   const playFinale = useCallback(() => {
     playToneSequence([
-      { frequency: 392, duration: 0.2, type: 'triangle', gain: 0.2 },
-      { frequency: 523.25, duration: 0.22, delay: 0.12, type: 'triangle', gain: 0.22 },
-      { frequency: 659.25, duration: 0.24, delay: 0.24, type: 'triangle', gain: 0.24 },
-      { frequency: 783.99, duration: 0.36, delay: 0.38, type: 'sine', gain: 0.28 },
+      { frequency: 392, duration: 0.18, type: 'triangle', gain: 0.08 },
+      { frequency: 523.25, duration: 0.2, delay: 0.1, type: 'triangle', gain: 0.08 },
+      { frequency: 659.25, duration: 0.22, delay: 0.2, type: 'triangle', gain: 0.08 },
+      { frequency: 783.99, duration: 0.3, delay: 0.34, type: 'sine', gain: 0.09 },
     ])
   }, [playToneSequence])
 
-  return { unlockSound, playHover, playYes, playNo, playFinale }
+  useEffect(() => {
+    return () => {
+      audioContextRef.current?.close().catch(() => {
+        // no-op
+      })
+    }
+  }, [])
+
+  return {
+    playHover,
+    playYes,
+    playNo,
+    playFinale,
+  }
 }
