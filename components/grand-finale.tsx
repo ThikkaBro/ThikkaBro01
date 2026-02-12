@@ -21,11 +21,14 @@ export function GrandFinale({ isActive }: GrandFinaleProps) {
 
       return () => clearTimeout(flashTimer)
     }
+
+    setShowContent(false)
+    setShowConfetti(false)
   }, [isActive])
 
   return (
     <motion.div
-      className="fixed inset-0 z-50"
+      className={`fixed inset-0 z-50 ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`}
       initial={{ opacity: 0 }}
       animate={isActive ? { opacity: 1 } : { opacity: 0 }}
       transition={{ duration: 0.3 }}
