@@ -2,21 +2,24 @@
 
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import { useUiSounds } from '@/hooks/use-ui-sounds'
 
 interface GrandFinaleProps {
   isActive: boolean
+  outcome: 'yes' | 'no'
 }
 
-export function GrandFinale({ isActive }: GrandFinaleProps) {
+export function GrandFinale({ isActive, outcome }: GrandFinaleProps) {
   const [showContent, setShowContent] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const { playFinale } = useUiSounds()
 
   useEffect(() => {
     if (isActive) {
-      // White flash effect
+      playFinale()
       const flashTimer = setTimeout(() => {
         setShowContent(true)
-        setShowConfetti(true)
+        setShowConfetti(outcome === 'yes')
       }, 400)
 
       return () => clearTimeout(flashTimer)
@@ -24,7 +27,9 @@ export function GrandFinale({ isActive }: GrandFinaleProps) {
 
     setShowContent(false)
     setShowConfetti(false)
-  }, [isActive])
+  }, [isActive, outcome, playFinale])
+
+  const isYes = outcome === 'yes'
 
   return (
     <motion.div
@@ -33,7 +38,6 @@ export function GrandFinale({ isActive }: GrandFinaleProps) {
       animate={isActive ? { opacity: 1 } : { opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* White flash */}
       <motion.div
         className="absolute inset-0 bg-white"
         initial={{ opacity: 0 }}
@@ -41,120 +45,52 @@ export function GrandFinale({ isActive }: GrandFinaleProps) {
         transition={{ duration: 1 }}
       />
 
-      {/* Confetti */}
       {showConfetti && <Confetti />}
 
-      {/* Main content */}
       {showContent && (
         <motion.div
-          className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-background to-background bg-background"
+          className={`absolute inset-0 flex flex-col items-center justify-center bg-background ${
+            isYes ? 'bg-gradient-to-b from-background to-background' : 'bg-gradient-to-b from-background via-background to-muted/40'
+          }`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Animated heart */}
           <motion.div
             className="text-7xl sm:text-8xl md:text-9xl mb-8"
             animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 5, -5, 0],
+              scale: [1, 1.15, 1],
+              rotate: isYes ? [0, 5, -5, 0] : [0, 2, -2, 0],
             }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
           >
-            ❤️
+            {isYes ? '❤️' : '🤍'}
           </motion.div>
 
-          {/* Main message */}
           <motion.div
-            className="text-center space-y-4"
+            className="text-center space-y-4 px-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <h1 className="font-serif text-4xl sm:text-5xl md:text-7xl font-bold text-foreground text-balance">
-              I LOVE YOU
+              {isYes ? 'I LOVE YOU' : 'THANK YOU'}
             </h1>
             <h2 className="font-serif text-3xl sm:text-4xl md:text-6xl text-primary">
-              FOREVER, THENUMI
+              {isYes ? 'FOREVER, THENUMI' : 'FOR YOUR HONEST ANSWER'}
             </h2>
           </motion.div>
 
-          {/* Supporting text */}
           <motion.p
-            className="mt-12 text-center text-muted-foreground max-w-md px-4 text-lg"
+            className="mt-10 text-center text-muted-foreground max-w-xl px-6 text-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            You are my greatest treasure, my deepest love, and my forever companion.
+            {isYes
+              ? 'You are my greatest treasure, my deepest love, and my forever companion.'
+              : 'No matter what, I appreciate your kindness and the moment we shared.'}
           </motion.p>
-
-          {/* Floating decorative elements */}
-          <motion.div
-            className="absolute top-20 left-10 text-3xl"
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.5, 1, 0.5],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          >
-            ✨
-          </motion.div>
-
-          <motion.div
-            className="absolute top-20 right-10 text-3xl"
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.5, 1, 0.5],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              delay: 0.5,
-            }}
-          >
-            ✨
-          </motion.div>
-
-          <motion.div
-            className="absolute bottom-20 left-10 text-3xl"
-            animate={{
-              y: [0, 30, 0],
-              opacity: [0.5, 1, 0.5],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          >
-            💕
-          </motion.div>
-
-          <motion.div
-            className="absolute bottom-20 right-10 text-3xl"
-            animate={{
-              y: [0, 30, 0],
-              opacity: [0.5, 1, 0.5],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              delay: 0.5,
-            }}
-          >
-            💕
-          </motion.div>
         </motion.div>
       )}
     </motion.div>
@@ -178,12 +114,7 @@ function Confetti() {
           style={{
             left: `${piece.left}%`,
             top: '-10px',
-            backgroundColor: [
-              '#ffd700',
-              '#d4a574',
-              '#f4d6d6',
-              '#ffffff',
-            ][Math.floor(Math.random() * 4)],
+            backgroundColor: ['#ffd700', '#d4a574', '#f4d6d6', '#ffffff'][Math.floor(Math.random() * 4)],
           }}
           animate={{
             y: window.innerHeight + 20,
