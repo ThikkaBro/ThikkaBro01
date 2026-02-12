@@ -6,10 +6,11 @@ import { useRef, useEffect, useState, memo } from 'react'
 interface PolaroidFrameProps {
   index: number
   caption: string
+  note?: string
   imageSrc?: string
 }
 
-function PolaroidFrameComponent({ index, caption, imageSrc }: PolaroidFrameProps) {
+function PolaroidFrameComponent({ index, caption, note, imageSrc }: PolaroidFrameProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [isInView, setIsInView] = useState(false)
   const { scrollYProgress } = useScroll({
@@ -33,10 +34,12 @@ function PolaroidFrameComponent({ index, caption, imageSrc }: PolaroidFrameProps
     return () => observer.disconnect()
   }, [])
 
-  // Placeholder image if none provided
   const bgStyle = imageSrc
     ? { backgroundImage: `url(${imageSrc})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : { backgroundColor: 'rgba(212, 165, 116, 0.1)', backgroundImage: `linear-gradient(135deg, rgba(212, 165, 116, 0.1), rgba(244, 214, 214, 0.1))` }
+    : {
+        backgroundColor: 'rgba(212, 165, 116, 0.1)',
+        backgroundImage: 'linear-gradient(135deg, rgba(212, 165, 116, 0.1), rgba(244, 214, 214, 0.1))',
+      }
 
   return (
     <motion.div
@@ -63,18 +66,26 @@ function PolaroidFrameComponent({ index, caption, imageSrc }: PolaroidFrameProps
             transition={{ duration: 0.6 }}
           />
 
-          {/* Glow effect overlay */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-primary pointer-events-none"
-            animate={isInView ? { opacity: [0, 0.3, 0] } : { opacity: 0 }}
+            className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-primary/20 pointer-events-none"
+            animate={isInView ? { opacity: [0.3, 0.5, 0.3] } : { opacity: 0.2 }}
             transition={{ duration: 2, repeat: Infinity }}
           />
+
+          {note && (
+            <motion.p
+              className="absolute left-3 bottom-3 text-[11px] sm:text-xs text-white/95 bg-black/35 backdrop-blur-sm px-2 py-1 rounded-md border border-white/20"
+              initial={{ opacity: 0, y: 5 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0.5, y: 2 }}
+              transition={{ duration: 0.4, delay: 0.15 }}
+            >
+              {note}
+            </motion.p>
+          )}
         </div>
 
         <div className="w-full h-1/4 bg-white p-4 flex flex-col justify-center">
-          <p className="font-serif text-sm text-foreground text-center leading-relaxed">
-            {caption}
-          </p>
+          <p className="font-serif text-sm text-foreground text-center leading-relaxed">{caption}</p>
           <div className="mt-2 flex justify-center gap-1">
             {[0, 1, 2].map((i) => (
               <motion.div
@@ -88,7 +99,6 @@ function PolaroidFrameComponent({ index, caption, imageSrc }: PolaroidFrameProps
         </div>
       </motion.div>
 
-      {/* Index number */}
       <motion.div
         className="absolute left-4 md:left-8 text-primary font-serif text-6xl md:text-8xl font-light opacity-10"
         animate={isInView ? { opacity: 0.2 } : { opacity: 0.05 }}

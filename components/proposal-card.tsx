@@ -31,6 +31,7 @@ export function ProposalCard({ onYes, onNo }: ProposalCardProps) {
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.55, ease: 'easeOut' }}
       className="flex items-center justify-center min-h-screen px-4 py-8 bg-background"
+      onPointerDown={unlockSound}
     >
       <motion.div
         className="relative w-full max-w-xl p-8 sm:p-10 rounded-3xl bg-card/90 border border-border shadow-2xl"
